@@ -69,7 +69,7 @@ export default function MovieTable() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [movies, setMovies] = React.useState(rows);
   const [pageNo, setPageNo] = React.useState(1); // Adjust this to your initial page number
-  const itemsPerPage = 1; // Number of items to display per page
+  const itemsPerPage = 5; // Number of items to display per page
 
   const validationSchema = Yup.object({
     name: Yup.string()
