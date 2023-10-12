@@ -16,7 +16,7 @@ import { saveAs } from "file-saver";
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import { Pagination } from "@mui/material";
-import { getAPI, putAPI } from "../utils/API";
+import { deleteAPI, getAPI, putAPI } from "../utils/API";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -139,14 +139,13 @@ export default function MovieTable() {
   };
 
   const onDelete = async (values) => {
-    const response = await putAPI({
-      url: `/updatemovie/${values.id}`,
-      body: values,
+    const response = await deleteAPI({
+      url: `/delete/${values.id}`,
     });
     getDetails();
   };
 
-  const newData = tempData.map((item) => {
+  const newData = movies.map((item) => {
     return { ...item };
   });
   const headers = [
@@ -156,7 +155,7 @@ export default function MovieTable() {
   ];
 
   const prepareTextData = () => {
-    const textData = tempData.map((movie) => {
+    const textData = movies.map((movie) => {
       return `Name: ${movie.name}\nDuration: ${movie.duration}\nRating: ${movie.rating}\n\n`;
     });
     const text = textData.join("\n");
@@ -172,22 +171,21 @@ export default function MovieTable() {
     setAnchorEl(null);
   };
 
+  const handleSearchSubmit = () => {
+    // Perform the search here
+    const query = searchText.toLowerCase();
+    const filteredMovies = movies.filter((item) => {
+      return item.name.toLowerCase().includes(query);
+    });
+    setMovies(filteredMovies);
+  };
+
   const handleSearchChange = (event) => {
     const { value } = event.target;
     setSearchText(value);
     handleSearchSubmit();
   };
 
-  const handleSearchSubmit = () => {
-    // Perform the search here
-    const query = searchText.toLowerCase();
-
-    const filteredMovies = tempData.filter((item) => {
-      return item.name.toLowerCase().includes(query);
-    });
-
-    setMovies(filteredMovies);
-  };
 
   const handlePagination = (event, value) => {
     setPageNo(value);
@@ -198,7 +196,6 @@ export default function MovieTable() {
     setMovies(response.data);
   };
 
-
   React.useEffect(() => {
     getDetails();
   }, []);
@@ -208,7 +205,7 @@ export default function MovieTable() {
       <Button variant="contained" color="primary" onClick={handleMenuOpen}>
         Download Movie List
       </Button>
-      <div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -261,6 +258,7 @@ export default function MovieTable() {
                 Rating&nbsp;(out of 10)
               </StyledTableCell>
               <StyledTableCell align="right">Action</StyledTableCell>
+              <StyledTableCell align="right">Delete</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
