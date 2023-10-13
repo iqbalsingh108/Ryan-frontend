@@ -50,6 +50,7 @@ export default function Home() {
   };
 
   const handleClose = () => {
+    formik.resetForm();
     setOpen(false);
   };
 
@@ -62,7 +63,9 @@ export default function Home() {
     validationSchema,
     onSubmit: (values) => {
       handleAddMovie(values);
-      handleClose();
+      setTimeout(() => {
+        handleClose();
+      }, 200);
     },
   });
 
@@ -75,13 +78,16 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <div className={styles.kdf}>
       <div className={styles.description}>
         <h1>Movies</h1>
         <Button variant="outlined" onClick={formOpen}>
           Add Movies
         </Button>
       </div>
-      <MovieTable />
+      <div className={styles.tableContent}>
+        <MovieTable addState={open}/>
+      </div>
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={formik.handleSubmit}>
           <DialogTitle>ADD MOVIE</DialogTitle>
@@ -138,6 +144,9 @@ export default function Home() {
           </DialogActions>
         </form>
       </Dialog>
+
+      </div>
+     
     </main>
   );
 }

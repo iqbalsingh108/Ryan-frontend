@@ -12,6 +12,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { CSVLink } from "react-csv";
 import { saveAs } from "file-saver";
+import styles from "../page.module.css";
 
 import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
@@ -64,12 +65,13 @@ const tempData = [
   { name: "Cupcake", duration: 250, rating: 6.0 },
 ];
 
-export default function MovieTable() {
+export default function MovieTable({ addState }) {
+  const [loading, setLoading] = React.useState(true);
   const [searchText, setSearchText] = React.useState("");
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [movies, setMovies] = React.useState(rows);
   const [pageNo, setPageNo] = React.useState(1); // Adjust this to your initial page number
-  const itemsPerPage = 5; // Number of items to display per page
+  // const itemsPerPage = 5; // Number of items to display per page
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -113,6 +115,7 @@ export default function MovieTable() {
   };
 
   const handleClose = () => {
+    formik.resetForm();
     setOpen(false);
   };
 
@@ -145,7 +148,7 @@ export default function MovieTable() {
     getDetails();
   };
 
-  const newData = movies.map((item) => {
+  const newData = movies?.rows?.map((item) => {
     return { ...item };
   });
   const headers = [
@@ -155,7 +158,7 @@ export default function MovieTable() {
   ];
 
   const prepareTextData = () => {
-    const textData = movies.map((movie) => {
+    const textData = movies.rows.map((movie) => {
       return `Name: ${movie.name}\nDuration: ${movie.duration}\nRating: ${movie.rating}\n\n`;
     });
     const text = textData.join("\n");
@@ -172,40 +175,48 @@ export default function MovieTable() {
   };
 
   const handleSearchSubmit = () => {
-    // Perform the search here
-    const query = searchText.toLowerCase();
-    const filteredMovies = movies.filter((item) => {
-      return item.name.toLowerCase().includes(query);
-    });
-    setMovies(filteredMovies);
+    getDetails();
   };
 
   const handleSearchChange = (event) => {
     const { value } = event.target;
     setSearchText(value);
-    handleSearchSubmit();
   };
-
 
   const handlePagination = (event, value) => {
     setPageNo(value);
   };
 
   const getDetails = async () => {
-    const response = await getAPI({ url: "/allmovies" });
+    setLoading(true);
+    const response = await getAPI({
+      url: `/allmovies?page=${pageNo}&search=${searchText}`,
+    });
+    setLoading(false);
     setMovies(response.data);
   };
 
   React.useEffect(() => {
     getDetails();
-  }, []);
+  }, [searchText, pageNo, addState]);
+
+  const convertDurationToHours = (duration) => {
+    if (!duration) return "";
+    if (duration.includes("m")) {
+      const minutes = parseInt(duration);
+      return (minutes / 60).toFixed(2);
+    } else if (duration.includes("h")) {
+      return parseFloat(duration).toFixed(2);
+    }
+    return "";
+  };
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleMenuOpen}>
-        Download Movie List
-      </Button>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className={styles.TableHeader}>
+        <Button variant="outlined" color="primary" onClick={handleMenuOpen}>
+          Download Movie List
+        </Button>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -248,44 +259,68 @@ export default function MovieTable() {
           }}
         />
       </div>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Movie Name</StyledTableCell>
-              <StyledTableCell align="right">Duration (hours)</StyledTableCell>
-              <StyledTableCell align="right">
-                Rating&nbsp;(out of 10)
-              </StyledTableCell>
-              <StyledTableCell align="right">Action</StyledTableCell>
-              <StyledTableCell align="right">Delete</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {movies?.map((row) => (
-              <StyledTableRow key={row.name}>
-                <StyledTableCell component="th" scope="row">
-                  {row.name}
+      <>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 700 }} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Movie Name</StyledTableCell>
+                <StyledTableCell align="right">
+                  Duration (hours)
                 </StyledTableCell>
-                <StyledTableCell align="right">{row.duration}</StyledTableCell>
-                <StyledTableCell align="right">{row.rating}</StyledTableCell>
-                <StyledTableCell align="right" onClick={() => formOpen(row)}>
-                  Edit
+                <StyledTableCell align="right">
+                  Rating&nbsp;(out of 10)
                 </StyledTableCell>
-                <StyledTableCell align="right" onClick={() => onDelete(row)}>
-                  Delete
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Pagination
-        count={Math.ceil(movies.length / itemsPerPage)}
-        page={pageNo}
-        onChange={handlePagination}
-        className="pagination_section"
-      />
+                <StyledTableCell align="right">Action</StyledTableCell>
+                <StyledTableCell align="right">Delete</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {movies?.rows?.length ? (
+                movies.rows.map((row) => (
+                  <StyledTableRow key={row.name}>
+                    <StyledTableCell component="th" scope="row">
+                      {row.name}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">
+                      {convertDurationToHours(row.duration)}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">
+                      {row.rating}
+                    </StyledTableCell>
+                    <StyledTableCell
+                      align="right"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => formOpen(row)}
+                    >
+                      Edit
+                    </StyledTableCell>
+                    <StyledTableCell
+                      align="right"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => onDelete(row)}
+                    >
+                      Delete
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    No data available
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Pagination
+          count={movies.totalPage}
+          page={pageNo}
+          onChange={handlePagination}
+          className="pagination_section"
+        />
+      </>
 
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={formik.handleSubmit}>

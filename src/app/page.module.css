@@ -1,13 +1,26 @@
 .main {
   display: flex;
-  flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.description {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
-  min-height: 100vh;
 }
 
-.description {
+.kdf {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0px 0px 12px #00000045;
+}
+/* .description {
   display: inherit;
   justify-content: inherit;
   align-items: inherit;
@@ -16,7 +29,7 @@
   width: 100%;
   z-index: 2;
   font-family: var(--font-mono);
-}
+} */
 
 .description a {
   display: flex;
@@ -32,6 +45,15 @@
   background-color: rgba(var(--callout-rgb), 0.5);
   border: 1px solid rgba(var(--callout-border-rgb), 0.3);
   border-radius: var(--border-radius);
+}
+
+.tableContent {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  align-items: end;
+  justify-content: space-evenly;
+  min-width: var(--max-width);
 }
 
 .code {
@@ -107,6 +129,17 @@
 .logo {
   position: relative;
 }
+
+.TableHeader {
+  display: grid;
+  grid-gap: 40%;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  padding: 0px 60px;
+}
+
+
+
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
